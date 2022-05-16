@@ -1,0 +1,214 @@
+<template>
+  <div class="help-page-container">
+    <div class="bot-area">
+      <img src="../../assets/bot.jpg" alt="" />
+      <span>Virtual Agent</span>
+    </div>
+
+    <div class="chat-wrapper">
+      <div ref="chat" class="chat-content">
+        <span v-for="(message, i) in messages" :key="i" :class="[message.type]">
+          {{ message.content }}
+        </span>
+      </div>
+    </div>
+    <div class="input-wrapper">
+      <input
+        type="text"
+        placeholder="Ask anything..."
+        v-model="currentMessage"
+        @keydown.enter="sendMessage"
+      />
+      <button @click="sendMessage">
+        <font-awesome-icon :icon="['far', 'paper-plane']" />
+      </button>
+    </div>
+  </div>
+</template>
+
+<script>
+export default {
+  data() {
+    return {
+      messages: [],
+      currentMessage: "",
+    };
+  },
+  mounted() {
+    this.scrollBottom();
+  },
+  methods: {
+    scrollBottom() {
+      this.$refs.chat.scrollTo({
+        top: this.$refs.chat.scrollHeight,
+        behavior: "smooth",
+      });
+    },
+    sendMessage() {
+      if (!this.currentMessage) return;
+
+      this.messages.push({
+        type: "sent",
+        content: this.currentMessage,
+      });
+
+      setTimeout(() => {
+        this.scrollBottom();
+      }, 100);
+
+      this.sendMessageToBot();
+    },
+    async sendMessageToBot() {
+      const botUrl =
+        "https://inference-1.aqknehckikl9ydkvc7efimj.staging-cloud.cnvrg.io/api/v1/endpoints/gxdjabsplynbtnqbscxs";
+      const requestPayload = {
+        input_params: {
+          input_text: this.currentMessage,
+        },
+      };
+
+      this.currentMessage = ""; // clear chat box
+
+      const res = await fetch(botUrl, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Cnvrg-Api-Key": "7Ma4sE7CuKwNAKT3eVvdmgKN",
+        },
+        body: JSON.stringify(requestPayload),
+      });
+      const data = await res.json();
+
+      this.messages.push({
+        type: "received",
+        content: data.prediction.response,
+      });
+
+      setTimeout(() => {
+        this.scrollBottom();
+      }, 100);
+    },
+  },
+};
+</script>
+
+<style lang="scss" scoped>
+.help-page-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding-top: 12px;
+
+  .bot-area {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 38px 24px 24px;
+    border-bottom: 1px solid var(--seperator-color);
+
+    span {
+      font-size: 20px;
+      font-family: "Montserrat", sans-serif;
+    }
+
+    img {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+  }
+
+  .chat-wrapper {
+    display: flex;
+    flex-direction: column-reverse;
+    height: 100%;
+    overflow: hidden;
+
+    .chat-content {
+      display: flex;
+      flex-direction: column;
+      font-size: 18px;
+      padding: 24px;
+      overflow: auto;
+
+      .sent,
+      .received {
+        min-width: 30px;
+        margin: 8px 0;
+      }
+
+      .received {
+        align-self: flex-start;
+        position: relative;
+        padding: 12px;
+        color: var(--secondary-color);
+        background: #dde1e2;
+        border-top-right-radius: 22px;
+        border-bottom-right-radius: 22px;
+        border-bottom-left-radius: 24px;
+        border-top-left-radius: 4px;
+      }
+
+      .sent {
+        align-self: flex-end;
+        position: relative;
+        padding: 12px;
+        color: #fff;
+        background: var(--primary-color);
+        border-top-left-radius: 22px;
+        border-bottom-left-radius: 22px;
+        border-bottom-right-radius: 24px;
+        border-top-right-radius: 4px;
+      }
+    }
+  }
+
+  .input-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 120px;
+    margin: 24px;
+
+    input {
+      font-family: "Assistant";
+      border: none;
+      width: 60%;
+      box-shadow: 0px 0px 1px rgba(0, 0, 0, 0.15);
+      padding: 16px;
+      border-radius: 18px;
+      font-size: 18px;
+
+      &:focus {
+        outline: none;
+      }
+    }
+
+    button {
+      display: flex;
+      text-align: center;
+      justify-content: center;
+      align-items: center;
+      font-size: 20px;
+      background-color: var(--primary-color);
+      border: none;
+      color: #fff;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      box-shadow: 0px 0px 4px var(--primary-color);
+      cursor: pointer;
+
+      svg {
+        margin-right: 4px;
+      }
+
+      &:hover {
+        background-color: var(--primary-color-hover);
+      }
+    }
+  }
+}
+</style>
