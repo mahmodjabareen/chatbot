@@ -59,8 +59,7 @@ export default {
       this.sendMessageToBot();
     },
     async sendMessageToBot() {
-      const botUrl =
-        "https://inference-1.aqknehckikl9ydkvc7efimj.staging-cloud.cnvrg.io/api/v1/endpoints/gxdjabsplynbtnqbscxs";
+      const botUrl = "INFERENCE_ENDPOINT_URL_WILL_BE_HERE";
       const requestPayload = {
         input_params: {
           input_text: this.currentMessage,
@@ -73,7 +72,10 @@ export default {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Cnvrg-Api-Key": "7Ma4sE7CuKwNAKT3eVvdmgKN",
+          "Cnvrg-Api-Key": "YOUR_API_KEY_WILL_BE_HERE", 
+          /* In a real web application, store the api key in a safe place (.env for example) 
+          * and do not commit it.
+          */
         },
         body: JSON.stringify(requestPayload),
       });
