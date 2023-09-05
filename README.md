@@ -51,3 +51,6 @@ To compile and enable hot-reloading during development, use the following comman
 npm run dev
 ```
 The application will run locally on port 3000, allowing you to interact with your integrated chatbot.
+
+>Note: If you encounter any installation issues, consider using nvm to change your Node version to 14.0.0.
+
