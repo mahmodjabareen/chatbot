@@ -72,7 +72,7 @@ export default {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Cnvrg-Api-Key": "YOUR_API_KEY_WILL_BE_HERE", 
+          "x-api-key": "YOUR_API_KEY_WILL_BE_HERE", 
           /* In a real web application, store the api key in a safe place (.env for example) 
           * and do not commit it.
           */
