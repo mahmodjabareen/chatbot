@@ -93,7 +93,7 @@ export default {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": headerToken,
+          "x-api-key": headerToken,
            //API
           /* In a real web application, store the api key in a safe place (.env for example) 
           * and do not commit it.
