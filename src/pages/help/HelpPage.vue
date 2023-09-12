@@ -7,8 +7,8 @@
 
     <div class="chat-wrapper">
       <div ref="chat" class="chat-content">
-        <span v-for="(message, i) in messages" :key="i" :class="[message.type]">
-          {{ message.content }}
+        <span v-for="(message, i) in messages" :key="i" class="message" :class="[`${message.user_role ? 'user-role' : 'assistant'}`]">
+          {{ message.text }}
         </span>
       </div>
     </div>
@@ -48,42 +48,66 @@ export default {
       if (!this.currentMessage) return;
 
       this.messages.push({
-        type: "sent",
-        content: this.currentMessage,
+        user_role: true,
+        text: this.currentMessage,
       });
 
       setTimeout(() => {
         this.scrollBottom();
       }, 100);
-
-      this.sendMessageToBot();
+      
+      this.sendMessageToBot({
+        user_role: true,
+        text: this.currentMessage,
+      });
     },
-    async sendMessageToBot() {
-      const botUrl = "INFERENCE_ENDPOINT_URL_WILL_BE_HERE";
-      const requestPayload = {
-        input_params: {
-          input_text: this.currentMessage,
-        },
-      };
+    async sendMessageToBot(message) {
+        const botUrl = 'Your_URL'; // replace your URL 
+        const modelUuid = "YOUR_MODEL_UUID"; // replace your Model 
+        const headerToken = "Your_Token"; // replace your Token
+        const requestPayload = {
+          "model_uuid": modelUuid,
+          "data": {
+            "messages": [
+              message,
+            ],
+            "inference_params": {"max_new_tokens":250,"temperature":0.5,"repetition_penalty":1,"top_p":1,"do_sample":true,"num_beams":0,"top_k":50},
+            "system_prompt": "- You are a helpful assistant chatbot trained by Intel.\n- You answer questions.\n- You are excited to be able to help the user, but will refuse to do anything that could be considered harmful to the user.\n- You are more than just an information source, you are also able to write poetry, short stories, and make jokes\n- Your responses are cynical\n"}};
+
 
       this.currentMessage = ""; // clear chat box
-
+      var  chunkText=""; // the response will returned here
       const res = await fetch(botUrl, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": "YOUR_API_KEY_WILL_BE_HERE", 
+          "x-api-key": headerToken,
+           //API
           /* In a real web application, store the api key in a safe place (.env for example) 
           * and do not commit it.
           */
         },
         body: JSON.stringify(requestPayload),
+      }).then(response => {
+    const reader = response.body.getReader();
+    function readChunk() {
+      return reader.read().then(({ done, value }) => {
+        if (done) {
+          return;
+        }
+      
+        //convert chunks to text
+         chunkText += new TextDecoder().decode(value);
+        // Read the next chunk
+        return readChunk();
       });
-      const data = await res.json();
+    }
 
+    return readChunk();
+  }); 
       this.messages.push({
-        type: "received",
-        content: data.prediction.response,
+        user_role: false,
+        text: chunkText,
       });
 
       setTimeout(() => {
@@ -134,13 +158,12 @@ export default {
       padding: 24px;
       overflow: auto;
 
-      .sent,
-      .received {
+      .message {
         min-width: 30px;
         margin: 8px 0;
       }
 
-      .received {
+      .user-role {
         align-self: flex-start;
         position: relative;
         padding: 12px;
@@ -152,7 +175,7 @@ export default {
         border-top-left-radius: 4px;
       }
 
-      .sent {
+      .assistant {
         align-self: flex-end;
         position: relative;
         padding: 12px;
